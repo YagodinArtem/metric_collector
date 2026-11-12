@@ -1,32 +1,35 @@
 package main
 
-/*
-*
-Задание по треку «Сервис сбора метрик и алертинга»
-Разработайте сервер для сбора рантайм-метрик, который будет собирать репорты от агентов по протоколу HTTP.
-Агент вы реализуете в следующем инкременте — в качестве источника метрик вы будете использовать пакет runtime.
-Сервер должен быть доступен по адресу http://localhost:8080, а также:
+import (
+	"log/slog"
+	"net/http"
+	"os"
 
-	Принимать и хранить произвольные метрики двух типов:
-	    Тип gauge, float64 — новое значение должно замещать предыдущее.
-	    Тип counter, int64 — новое значение должно добавляться к предыдущему, если какое-то значение уже было известно серверу.
-	Принимать метрики по протоколу HTTP методом POST.
-	Принимать данные в формате http://<АДРЕС_СЕРВЕРА>/update/<ТИП_МЕТРИКИ>/<ИМЯ_МЕТРИКИ>/<ЗНАЧЕНИЕ_МЕТРИКИ>, Content-Type: text/plain.
-	При успешном приёме возвращать http.StatusOK.
-	При попытке передать запрос без имени метрики возвращать http.StatusNotFound.
-	При попытке передать запрос с некорректным типом метрики или значением возвращать http.StatusBadRequest.
+	"github.com/YagodinArtem/metric_collector.git/internal"
+	models "github.com/YagodinArtem/metric_collector.git/internal/model"
+)
 
-Редиректы не поддерживаются.
-Для хранения метрик объявите тип MemStorage.
-Рекомендуем использовать тип struct с полем-коллекцией внутри (slice или map).
-В будущем это позволит добавлять к объекту хранилища новые поля — например, логгер или мьютекс,
-чтобы можно было использовать их в методах. Опишите интерфейс для взаимодействия с этим хранилищем.
-
-TODO: dev storage logic
-*/
 func main() {
 	err := RunServer()
 	if err != nil {
 		panic(err)
 	}
+}
+
+func RunServer() error {
+
+	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
+
+	slog.SetDefault(logger)
+	mux := internal.BuildMux(internal.BuildMemStorageService())
+
+	slog.Info("server is running ")
+	err := http.ListenAndServe(models.ServerPath, mux)
+
+	if err != nil {
+		slog.Info("error caught when running server", "error", err)
+		return err
+	}
+
+	return nil
 }
