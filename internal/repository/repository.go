@@ -1,6 +1,8 @@
 package repository
 
 type Repository[TYPE any, ID any] interface {
+	SaveOrUpdate(*TYPE) (bool, error)
+
 	Save(*TYPE) (bool, error)
 
 	SaveAll([]TYPE) error

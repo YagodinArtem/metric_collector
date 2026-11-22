@@ -72,7 +72,7 @@ func (h *MetricHandler) MetricRequestHandler(writer http.ResponseWriter, request
 
 	metric.SetVal(metricVal)
 
-	success, err := h.mss.SaveNewMetric(&metric)
+	updatedMetric, err := h.mss.SaveNewMetric(&metric)
 
 	if err != nil {
 		writer.WriteHeader(http.StatusInternalServerError)
@@ -80,8 +80,8 @@ func (h *MetricHandler) MetricRequestHandler(writer http.ResponseWriter, request
 		return
 	}
 
-	if success {
-		slog.Info("saved!", "metric", metric)
+	if updatedMetric != nil {
+		slog.Info("saved!", "metric", updatedMetric)
 		writer.WriteHeader(http.StatusOK)
 	} else {
 		slog.Error("metric not saved", "metric", metric)

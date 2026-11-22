@@ -9,9 +9,13 @@ import (
 )
 
 type MetricStorageService[TYPE any, ID any] interface {
-	SaveNewMetric(metric *TYPE) (bool, error)
+	SaveNewMetric(metric *TYPE) (*models.Metrics, error)
+
+	Delete(metric *TYPE) (bool, error)
 
 	FindByID(ID) (*TYPE, error)
+
+	FindAll() ([]TYPE, error)
 }
 
 type MemStorageMetricStorageService struct {
@@ -25,7 +29,7 @@ func NewMemStorageMetricStorageService(repo repository.Repository[models.Metrics
 	}
 }
 
-func (m *MemStorageMetricStorageService) SaveNewMetric(metric *models.Metrics) (bool, error) {
+func (m *MemStorageMetricStorageService) SaveNewMetric(metric *models.Metrics) (*models.Metrics, error) {
 
 	m.lock.Lock()
 	defer m.lock.Unlock()
@@ -33,11 +37,16 @@ func (m *MemStorageMetricStorageService) SaveNewMetric(metric *models.Metrics) (
 	existMetric, _ := m.repo.FindByID(metric.ID)
 
 	if existMetric == nil {
-		return m.repo.Save(metric)
+		_, err := m.repo.Save(metric)
+
+		if err != nil {
+			return nil, err
+		}
+		return metric, err
 	}
 
 	if existMetric.MType != metric.MType {
-		return false, errors.New("metric exist, but type is differ, change metric ID")
+		return nil, errors.New("metric exist, but type is differ, change metric ID")
 	}
 
 	switch existMetric.MType {
@@ -53,13 +62,28 @@ func (m *MemStorageMetricStorageService) SaveNewMetric(metric *models.Metrics) (
 	_, err := m.repo.Update(existMetric)
 
 	if err != nil {
-		return false, err
+		return nil, err
 	}
 
-	return true, nil
+	return existMetric, nil
 
 }
 
 func (m *MemStorageMetricStorageService) FindByID(id string) (*models.Metrics, error) {
 	return m.repo.FindByID(id)
+}
+
+func (m *MemStorageMetricStorageService) FindAll() ([]models.Metrics, error) {
+	return m.repo.FindAll()
+}
+
+func (m *MemStorageMetricStorageService) Delete(metric *models.Metrics) (bool, error) {
+
+	savedMetric, _ := m.repo.FindByID(metric.ID)
+
+	if savedMetric == nil {
+		return false, nil
+	}
+
+	return m.repo.DeleteByID(savedMetric.ID)
 }

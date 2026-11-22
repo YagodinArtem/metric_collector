@@ -1,6 +1,7 @@
 package models
 
 import (
+	"errors"
 	"slices"
 	"strconv"
 )
@@ -35,6 +36,25 @@ func (m *Metrics) SetVal(givenVal string) {
 	case Gauge:
 		gaugeVal, _ := strconv.ParseFloat(givenVal, 64)
 		m.Value = &gaugeVal
+	}
+}
+
+func MetricValToStr(m *Metrics) (string, error) {
+
+	switch m.MType {
+	case Gauge:
+		if m.Value == nil {
+			return "", errors.New("m.Value is nil")
+		}
+		return strconv.FormatFloat(*m.Value, 'f', -1, 64), nil
+	case Counter:
+		if m.Delta == nil {
+			return "", errors.New("m.Delta is nil")
+
+		}
+		return strconv.FormatInt(*m.Delta, 10), nil
+	default:
+		return "", errors.New("unexpected type")
 	}
 }
 

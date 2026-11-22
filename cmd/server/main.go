@@ -1,12 +1,13 @@
 package main
 
 import (
+	"fmt"
 	"log/slog"
 	"net/http"
 	"os"
 
 	"github.com/YagodinArtem/metric_collector.git/internal"
-	models "github.com/YagodinArtem/metric_collector.git/internal/model"
+	"github.com/YagodinArtem/metric_collector.git/internal/config"
 )
 
 func main() {
@@ -18,13 +19,19 @@ func main() {
 
 func RunServer() error {
 
-	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
+	cfg, configLoadErr := config.LoadServerConfig()
 
+	if cfg == nil || configLoadErr != nil {
+		return fmt.Errorf("server config loading error: %s", configLoadErr)
+	}
+
+	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
 	slog.SetDefault(logger)
+
 	mux := internal.BuildMux(internal.BuildMemStorageService())
 
-	slog.Info("server is running ")
-	err := http.ListenAndServe(models.ServerPath, mux)
+	slog.Info("server is running")
+	err := http.ListenAndServe(cfg.Address, mux)
 
 	if err != nil {
 		slog.Info("error caught when running server", "error", err)

@@ -18,6 +18,14 @@ func NewMemStorage() *MemStorage {
 	}
 }
 
+func (s *MemStorage) SaveOrUpdate(t *models.Metrics) (bool, error) {
+
+	if _, exists := s.storage[t.ID]; exists {
+		return s.Update(t)
+	}
+	return s.Save(t)
+}
+
 func (s *MemStorage) Save(t *models.Metrics) (bool, error) {
 
 	s.lock.Lock()
@@ -62,8 +70,19 @@ func (s *MemStorage) FindByID(id string) (*models.Metrics, error) {
 
 }
 
-func (*MemStorage) FindAll() ([]models.Metrics, error) {
-	panic("implement me")
+func (s *MemStorage) FindAll() ([]models.Metrics, error) {
+
+	s.lock.RLock()
+	defer s.lock.RUnlock()
+
+	result := make([]models.Metrics, 0, len(s.storage))
+
+	for _, metrics := range s.storage {
+		result = append(result, *metrics)
+	}
+
+	return result, nil
+
 }
 
 func (s *MemStorage) Update(t *models.Metrics) (bool, error) {
@@ -84,8 +103,18 @@ func (s *MemStorage) Update(t *models.Metrics) (bool, error) {
 
 }
 
-func (*MemStorage) DeleteByID(id string) (bool, error) {
-	panic("implement me")
+func (s *MemStorage) DeleteByID(id string) (bool, error) {
+
+	s.lock.Lock()
+	defer s.lock.Unlock()
+
+	if _, exists := s.storage[id]; !exists {
+		return false, errors.New("metric not exists")
+	}
+
+	delete(s.storage, id)
+	return true, nil
+
 }
 
 func (*MemStorage) DeleteAll() (bool, error) {
