@@ -41,7 +41,7 @@ func runAgent() error {
 
 	slog.Info("agent is running")
 
-	go poller.PollWithInterval()
+	go poller.InfinityPoll()
 	sender.SendWithInterval()
 
 	return nil
