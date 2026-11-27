@@ -28,10 +28,10 @@ func RunServer() error {
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
 	slog.SetDefault(logger)
 
-	mux := internal.BuildMux(internal.BuildMemStorageService())
+	router := internal.BuildRouter(internal.BuildMemStorageService())
 
 	slog.Info("server is running")
-	err := http.ListenAndServe(cfg.Address, mux)
+	err := http.ListenAndServe(cfg.Address, router)
 
 	if err != nil {
 		slog.Info("error caught when running server", "error", err)

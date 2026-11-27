@@ -14,7 +14,7 @@ import (
 
 func TestMetricHandler_MetricRequestHandler(t *testing.T) {
 	service := internal.BuildMemStorageService()
-	mux := internal.BuildMux(service)
+	mux := internal.BuildRouter(service)
 
 	tests := []struct {
 		testName string
@@ -95,7 +95,7 @@ func TestMetricHandler_MetricRequestHandler(t *testing.T) {
 
 func TestMetricHandler_Saving(t *testing.T) {
 	service := internal.BuildMemStorageService()
-	mux := internal.BuildMux(service)
+	mux := internal.BuildRouter(service)
 
 	requests := []string{
 		"/update/gauge/test_gauge/64.0",
