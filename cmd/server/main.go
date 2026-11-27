@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"log/slog"
 	"net/http"
@@ -19,7 +20,9 @@ func main() {
 
 func RunServer() error {
 
-	cfg, configLoadErr := config.LoadServerConfig()
+	flag.Args()
+
+	cfg, configLoadErr := config.ServerFlagConfig()
 
 	if cfg == nil || configLoadErr != nil {
 		return fmt.Errorf("server config loading error: %s", configLoadErr)

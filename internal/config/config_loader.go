@@ -1,7 +1,9 @@
 package config
 
 import (
+	"flag"
 	"fmt"
+	"strconv"
 
 	"github.com/caarlos0/env/v11"
 	"github.com/joho/godotenv"
@@ -31,6 +33,17 @@ func LoadServerConfig() (*ServerConfig, error) {
 	return &cfg, nil
 }
 
+func ServerFlagConfig() (*ServerConfig, error) {
+
+	serverAddress := flag.String("a", "localhost:8080", "server address")
+
+	flag.Parse()
+
+	return &ServerConfig{
+		Address: *serverAddress,
+	}, nil
+}
+
 func LoadAgentConfig() (*AgentConfig, error) {
 
 	_ = godotenv.Load(".env.local")
@@ -43,4 +56,23 @@ func LoadAgentConfig() (*AgentConfig, error) {
 	}
 
 	return &cfg, nil
+}
+
+func AgentFlagConfig() (*AgentConfig, error) {
+
+	agentAddress := flag.String("a", "localhost:8080", "server address")
+	reportInterval := flag.String("r", "10", "report interval ")
+	pollInterval := flag.String("p", "2", "poll interval ")
+
+	report, _ := strconv.ParseInt(*reportInterval, 10, 64)
+	poll, _ := strconv.ParseInt(*pollInterval, 10, 64)
+
+	flag.Parse()
+
+	return &AgentConfig{
+		Address:        *agentAddress,
+		PollInterval:   int(poll),
+		ReportInterval: int(report),
+	}, nil
+
 }

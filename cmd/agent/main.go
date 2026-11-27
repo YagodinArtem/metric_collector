@@ -25,7 +25,7 @@ func main() {
 
 func runAgent() error {
 
-	cfg, configLoadErr := config.LoadAgentConfig()
+	cfg, configLoadErr := config.AgentFlagConfig()
 
 	if cfg == nil || configLoadErr != nil {
 		return fmt.Errorf("agent config loading error: %s", configLoadErr)
