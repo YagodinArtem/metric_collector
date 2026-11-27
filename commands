@@ -1,0 +1,4 @@
+
+
+# run static analysis and tests
+go vet ./... && go test -race ./...
